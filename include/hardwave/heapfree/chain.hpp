@@ -332,7 +332,42 @@ public:
 /// stack probably), without preallocating a fixed number of elements as an
 /// array<> somewhere.
 ///
-/// On destruction the chain is cleared from all elements.
+/// On destruction all segments are detached from the chain.
+///
+/// # Example
+///
+/// ```c++
+/// #include <iostream>
+/// #include "hardwave/heapfree/chain.hpp"
+///
+/// using namespace hardwave::heapfree;
+///
+/// int main() {
+///   chain<int> my_chain;
+///
+///   auto elm1 = my_chain.place_back(42);
+///   auto elm2 = my_chain.place_back(5);
+///   auto elm3 = my_chain.place_back(13);
+///
+///   std::cerr << "Second elm: " << my_chain[1] << "\n";
+///
+///   my_chain[1] = 10;
+///
+///   std::cerr << "Chain elms: ";
+///   for (const auto &v : my_chain)
+///     std::cerr << v << ", ";
+///   std::cerr << "\n";
+///
+///   return 0;
+/// }
+/// ```
+///
+/// Outputs:
+///
+/// ```
+/// Second elm: 5
+/// Chain elms: 42, 10, 13,
+/// ```
 ///
 /// # Iterators & pointers
 ///
@@ -367,24 +402,26 @@ public:
 /// using int_seg = custom_seg<char, segment_type::chars>;
 /// using str_seg = custom_seg<char[], segment_type::strs>;
 ///
-/// long_seg a;
-/// ch.link_back(my_chain, static_cast<segment>(a));
+/// int main() {
+///   long_seg a;
+///   ch.link_back(my_chain, static_cast<segment>(a));
 ///
-/// str_seg b;
-/// ch.link_back(my_chain, static_cast<segment>(b));
+///   str_seg b;
+///   ch.link_back(my_chain, static_cast<segment>(b));
 ///
-/// for (auto &seg = my_chain.segments()) {
-///   switch (seg.value()) {
-///     case segment_type::longs:
-///       long &payload = static_cast<long_seg&>(seg);
-///       ...
-///     case segment_type::chars:
-///       char &payload = static_cast<char_seg&>(seg);
-///       ...
-///     case segment_type::strs:
-///       char &payload[5] = static_cast<str_seg&>(seg);
-///       ...
-///   };
+///   for (auto &seg = my_chain.segments()) {
+///     switch (seg.value()) {
+///       case segment_type::longs:
+///         long &payload = static_cast<long_seg&>(seg);
+///         ...
+///       case segment_type::chars:
+///         char &payload = static_cast<char_seg&>(seg);
+///         ...
+///       case segment_type::strs:
+///         char &payload[5] = static_cast<str_seg&>(seg);
+///         ...
+///     };
+///   }
 /// }
 /// ```
 template<typename T>

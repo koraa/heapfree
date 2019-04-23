@@ -42,8 +42,40 @@ public:
 } // namespace detail
 
 /// Events hold a list of event listeners.
-/// The template parameters indicate the return type and the
-/// parameters that listeners receive when called
+/// The template parameters indicate the parameters that listeners receive when called.
+///
+/// The underlying data structure is a chain, so event listeners
+/// may be moved without issue.
+///
+/// Use `on()` to register an event handler and `fire()/try_fire()`
+/// to invoke all handlers registered on an event.
+///
+/// ```c++
+/// #include "hardwave/heapfree/event.hpp"
+///
+/// using namespace hardwave::heapfree;
+///
+/// int main() {
+///   event<int, int> my_event;
+///
+///   int counter=0;
+///   auto listener = on(my_event, [&](int a, int b) {
+///       std::cerr << "Event handler one was called for the " << ++counter << "nd time: " << a << ", " << b << "\n";
+///   });
+///
+///   fire(my_event, 42, 23);
+///   fire(my_event, 0, 1);
+///
+///   return 0;
+/// }
+/// ```
+///
+/// Output:
+///
+/// ```
+/// Event handler one was called for the 1nd time: 42, 23
+/// Event handler one was called for the 2nd time: 0, 1
+/// ```
 template<typename... Args>
 class event {
   HEAPFREE_DECLARE_ME(event<Args...>);
@@ -80,23 +112,6 @@ public:
 ///
 /// The segment type is constructed on the fly so various kinds of lambda
 /// types can be stored. (This allows us to store lambdas with arbitrary context).
-///
-/// ```
-/// event<int, int> my_event;
-///
-/// int counter=0;
-/// on(my_event, [&](int a, int b) {
-///   println("Event handler one was called for the ", counter, "nd time: ", a, ", ", b);
-/// });
-///
-/// fire(my_event, 42, 23);
-/// ```
-///
-/// Should output:
-///
-/// ```
-/// Event handler one was called for the 1nd time: 23, 42
-/// ```
 template<typename Lambda, typename... Args>
 [[nodiscard]] auto on(event<Args...> &ev, const Lambda &fn) {
   using EventType = event<Args...>;
@@ -110,6 +125,7 @@ template<typename Lambda, typename... Args>
 }
 
 /// Used to invoke all the event handlers of an event.
+/// Returns `true` if at least a single event listener was called.
 template<typename... Args>
 bool try_fire(event<Args...> &ev, Args&&... args) {
   for (auto &handler : ev.member_listeners.segments())
@@ -119,6 +135,9 @@ bool try_fire(event<Args...> &ev, Args&&... args) {
   return std::size(ev.listeners) > 0 || std::size(ev.member_listeners) > 0;
 }
 
+/// Used to invoke all the event handlers of an event.
+/// Will abort program execution using `HEAPFREE_ASSERT` if no listener
+/// was called (because none are registered).
 template<typename... Args>
 void fire(event<Args...> &ev, Args&&... args) {
   HEAPFREE_ASSERT(try_fire(ev, std::forward<Args>(args)...),

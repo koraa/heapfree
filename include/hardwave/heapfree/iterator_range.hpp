@@ -14,6 +14,33 @@ namespace heapfree {
 /// The usual range interfaces (size, empty, [] operator, begin, end) are supported.
 /// In addition to that slice() is supported
 /// size, slice and [] are O(N) for bidirectional iterators and O(1) for random access iterators.
+///
+/// # Example
+///
+/// ```
+/// #include <iostream>
+/// #include <vector>
+/// #include "hardwave/heapfree/iterator_range.hpp"
+///
+/// using namespace hardwave::heapfree;
+///
+/// int main() {
+///   std::vector<int> v{1,2,3,4,5,6,7,8,9,10};
+///   iterator_range r{v.begin() + 2, v.end() - 3};
+///
+///   for (const auto &i : r)
+///     std::cerr << i << ", ";
+///   std::cerr << "\n";
+///
+///   return 0;
+/// }
+/// ```
+///
+/// Output:
+///
+/// ```
+/// 3, 4, 5, 6, 7,
+/// ```
 template<typename Begin, typename End>
 class iterator_range {
   using me_t = iterator_range<Begin, End>;
