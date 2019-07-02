@@ -1,5 +1,7 @@
 # Heapfree
 
+Linked lists & event based programming for embedded environments in which the heap should not be used:
+
 Heapfree is a C++17 library to facilitate programming without making use of the heap. Use of the heap is generally not discouraged in most software
 projects (although heap allocation is still expensive and thus should be minimized); in some applications however heap-free programming can be a very
 desirable goal, either because the amount of memory available is very limited or because of hard real-time constraints which do not allow for the unpredictable
